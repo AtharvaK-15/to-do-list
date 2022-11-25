@@ -30,7 +30,15 @@ const item3 = new Item({
 
 const defaultItem = [item1, item2, item3];
 
-// created a public file and moved css folder into it and then called into website through express.
+const listSchema = {
+  name: String,
+  items: [itemSchema]
+};
+
+// mongoose model after creating listschema
+const List = mongoose.model("List",listSchema);
+
+// created a file called public and moved css folder into it and then called into website through express.
 app.use(express.static("public"));
 
 app.get("/", function (req, res) {
@@ -60,6 +68,31 @@ app.get("/", function (req, res) {
     }
   });
 });
+
+// customelistname is whatever user enters after the forward slash
+app.get("/:customlistname",function(req,res){
+  const customName =  req.params.customlistname;
+
+  List.findOne({name:customName},function(err,FoundItems){
+    if (!err) {
+      if(!FoundItems){
+        // Create a new list
+        const list = new List({
+          name: customName,
+          items: defaultItem
+        });
+          res.redirect("/"+customName); 
+    list.save();
+      }else{
+        // Show an existing list
+        res.render("list", { ListTitle: FoundItems.name, newListItems: FoundItems.items });
+      }
+    }
+  })
+  
+
+});
+
 
 app.post("/", function (req, res) {
   const itemName = req.body.newItem;
@@ -91,16 +124,7 @@ app.post("/delete",function(req,res){
   });
 });
 
-// WORK PAGE
-app.get("/work", function (req, res) {
-  res.render("list", { ListTitle: "Work List", newListItems: WorkItems });
-});
 
-app.post("/work", function (req, res) {
-  let item = req.body.newItem;
-  WorkItems.push(item);
-  res.redirect("/work");
-});
 
 app.listen(port, function (req, res) {
   console.log("Server is running on port 3000.");
