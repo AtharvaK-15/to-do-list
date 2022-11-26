@@ -96,21 +96,35 @@ app.get("/:customlistname",function(req,res){
 
 app.post("/", function (req, res) {
   const itemName = req.body.newItem;
+  const listName = req.body.list;
+
+  let today = new Date();
+
+  let options = {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  };
+
+  let day = today.toLocaleDateString("en-US", options);
 
   const item = new Item({
     name: itemName
   });
 
-  item.save();
-  res.redirect("/");
+  if(listName == day){
+    item.save();
+    res.redirect("/");
+  }else{
+    List.findOne({name:listName},function(err,FoundItems){
+      FoundItems.item.push(item);
+      FoundItems.save();
+      res.redirect("/"+listName);
+    })
+  }
 
-  // if (req.body.list === "Work") {
-  //   WorkItems.push(item);
-  //   res.redirect("/work");
-  // } else {
-  //   items.push(item);
-  //   res.redirect("/");
-  // }
+
+
 });
 
 app.post("/delete",function(req,res){
