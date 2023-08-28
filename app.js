@@ -49,6 +49,7 @@ app.get("/", function (req, res) {
     day: "numeric",
     month: "long",
   };
+  
 
   let day = today.toLocaleDateString("en-US", options);
 
